@@ -4,7 +4,7 @@ import os
 ### set openai key, first check if it is in environment variable, if not, check if it is in streamlit secrets, if not, raise error
 
 
-st.title("Chat with Columbia Copilot")
+st.title("Chat with Columbia Business School Grid Copilot")
 st.write(
     "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
 )
