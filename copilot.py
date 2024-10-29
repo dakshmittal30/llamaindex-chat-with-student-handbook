@@ -4,6 +4,8 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 import os
+import requests
+
 @retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(5))
 def chat_completion_request(client, messages, model="gpt-4o",
                             **kwargs):
@@ -18,6 +20,31 @@ def chat_completion_request(client, messages, model="gpt-4o",
         print("Unable to generate ChatCompletion response")
         print(f"Exception: {e}")
         return e
+
+
+def get_weather(city):
+    api_key = "5714d13e8736c9573db1249716bd9c6d"
+    base_url = "http://api.openweathermap.org/data/2.5/weather"
+    
+    # Create the request URL
+    params = {
+        'q': city,
+        'appid': api_key,
+        'units': 'metric'
+    }
+    
+    response = requests.get(base_url, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        weather = data['weather'][0]['description']
+        temp = data['main']['temp']
+        return f"Current weather in {city}: {weather}, {temp}°C"
+    else:
+        return "Sorry, couldn't get the weather details."
+
+
+
 
 class Copilot:
     def __init__(self):
@@ -34,26 +61,30 @@ class Copilot:
         
         self.system_prompt = """
             You are an expert on Columbia Business School HPC grid and your job is to answer questions 
-            about this grid.
+            about this grid. Sometimes you will also give information about weather.
         """
 
     def ask(self, question, messages, openai_key=None):
         ### initialize the llm client
         self.llm_client = OpenAI(api_key = openai_key)
+        if "weather" in question.lower():
+            city = question.split("in")[-1].strip()  # Extract city name
+            retrieved_info = get_weather(city)
 
-        ### use the retriever to get the answer
-        nodes = self.retriever.retrieve(question)
-        ### make answer a string with "1. <>, 2. <>, 3. <>"
-        retrieved_info = "\n".join([f"{i+1}. {node.text}" for i, node in enumerate(nodes)])
-        
+        else:
+            ### use the retriever to get the answer
+            nodes = self.retriever.retrieve(question)
+            ### make answer a string with "1. <>, 2. <>, 3. <>"
+            retrieved_info = "\n".join([f"{i+1}. {node.text}" for i, node in enumerate(nodes)])
+            
 
         processed_query_prompt = """
             The user is asking a question: {question}
 
             The retrived information is: {retrieved_info}
 
-            Please answer the question based on the retrieved information. If the question is not related to Columbia Business School HPC grid, 
-            please tell the user and ask for a question related to Columbia Business School HPC grid.
+            Please answer the question based on the retrieved information or the weather information. If the question is not related to Columbia Business School HPC grid or weather, 
+            please tell the user and ask for a question related to Columbia Business School HPC grid or weather of some city.
 
             Please highlight the information with bold text and bullet points.
         """
@@ -63,8 +94,8 @@ class Copilot:
         
         messages = [{"role": "system", "content": self.system_prompt}] + messages + [{"role": "user", "content": processed_query}]
         response = chat_completion_request(self.llm_client, 
-                                           messages = messages, 
-                                           stream=True)
+                                        messages = messages, 
+                                        stream=True)
         
         return retrieved_info, response
 

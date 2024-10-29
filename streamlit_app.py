@@ -4,7 +4,7 @@ import os
 ### set openai key, first check if it is in environment variable, if not, check if it is in streamlit secrets, if not, raise error
 
 
-st.title("Chat with Columbia Business School Grid Copilot")
+st.title("Chat with Columbia Business School Grid Copilot, who can also tell weather of the cities.")
 st.write(
     "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
 )
@@ -19,7 +19,7 @@ if not openai_api_key:
 else:
     if "messages" not in st.session_state.keys():  # Initialize the chat messages history
         st.session_state.messages = [
-            {"role": "assistant", "content": "I am Columbia grid Copilot, your personal assistant. You can ask me about Columbia HPC grid."}
+            {"role": "assistant", "content": "I am Columbia grid Copilot, your personal assistant. You can ask me about Columbia HPC grid. I can also tell weather of different cities - for this ask weather in some_city."}
         ]
 
     @st.cache_resource
