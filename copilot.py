@@ -60,8 +60,8 @@ class Copilot:
                         )
         
         self.system_prompt = """
-            You are an expert on Columbia Business School HPC grid and your job is to answer questions 
-            about this grid. Sometimes you will also give information about weather.
+            You are an expert on Columbia Business School HPC grid and also in weather across different cities. Your job is to answer questions 
+            about this grid and sometimes you will also give information about the weather of different cities.
         """
 
     def ask(self, question, messages, openai_key=None):
@@ -83,7 +83,7 @@ class Copilot:
 
             The retrived information is: {retrieved_info}
 
-            Please answer the question based on the retrieved information or the weather information. If the question is not related to Columbia Business School HPC grid or weather, 
+            Please answer the question based on the retrieved information or the retrieved weather information. If the question is not related to Columbia Business School HPC grid or the weather of some city, 
             please tell the user and ask for a question related to Columbia Business School HPC grid or weather of some city.
 
             Please highlight the information with bold text and bullet points.
